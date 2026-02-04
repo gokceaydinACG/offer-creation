@@ -199,6 +199,15 @@ def process_file(
     # Create DataFrame BEFORE writing Excel
     import pandas as pd
     df = pd.DataFrame(mapped_rows, columns=headers)
+    
+    # ✅ CRITICAL FIX: Convert datetime columns to string (especially BBD)
+    # This prevents "Object of type datetime is not JSON serializable" error
+    # when processor.py calls df.to_dict("records")
+    for col in df.columns:
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            # Convert datetime to string, replace NaT/nan with empty string
+            df[col] = df[col].astype(str).replace('NaT', '').replace('nan', '')
+            print(f"ℹ️  Converted {col} from datetime to string for JSON compatibility")
 
     # Step 8: Write to Excel with images
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

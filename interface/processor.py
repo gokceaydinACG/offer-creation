@@ -138,7 +138,14 @@ def process_uploaded_file(
                     headers = HPC_HEADERS
                     sheet_name = "HPC"
                 
-                rows = df.to_dict("records")
+                # ✅ FIX: Convert datetime columns to string before to_dict()
+                df_for_export = df.copy()
+                for col in df_for_export.columns:
+                    if pd.api.types.is_datetime64_any_dtype(df_for_export[col]):
+                        # Convert datetime to string, replace NaT/nan with empty string
+                        df_for_export[col] = df_for_export[col].astype(str).replace('NaT', '').replace('nan', '')
+                
+                rows = df_for_export.to_dict("records")
 
                 final_output = Path(tempfile.gettempdir()) / f"selected_{output_path.name}"
 
