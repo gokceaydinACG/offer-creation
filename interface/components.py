@@ -216,11 +216,15 @@ def render_product_image_uploader(selected_df):
     for idx in range(num_selected):
         row = selected_df.iloc[idx]
         product_desc = row.get("Product Description", "")
+        # ✅ CHANGED: Use EAN code for Google Images search instead of product description
+        ean_code = row.get("EAN code unit", "")
 
         if not product_desc:
             continue
 
-        search_query = urllib.parse.quote(product_desc)
+        # Use EAN if available, fallback to product description
+        search_term = ean_code if ean_code else product_desc
+        search_query = urllib.parse.quote(search_term)
         google_images_url = f"https://www.google.com/search?tbm=isch&q={search_query}"
 
         with st.expander(f"Product {idx + 1}: {product_desc[:60]}..."):
@@ -228,6 +232,9 @@ def render_product_image_uploader(selected_df):
 
             with col1:
                 st.markdown(f"**Product:** {product_desc}")
+                # Show what's being searched (EAN or description)
+                if ean_code:
+                    st.markdown(f"**EAN:** {ean_code}")
                 st.markdown(f"[🔍 Search on Google Images]({google_images_url})")
 
             with col2:

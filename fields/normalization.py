@@ -92,26 +92,26 @@ def _normalize_number_str(num_str: str) -> str:
 
 def normalize_content(value: Any) -> Optional[str]:
     """
-    Normalize content to: "<NUMBER> <UNIT>" with ONE SPACE, unit uppercase.
+    Normalize content to: "<NUMBER><UNIT>" with NO SPACE, unit uppercase.
 
     NEW RULES:
     - G, g, gr, Gr, GR → GR
     - K, k, kg, Kg, KG → KG
     - ml, ML, Ml, mL → ML
     - l, L → L
-    - Format: ALWAYS "<NUMBER> <UNIT>" with exactly ONE space
+    - Format: ALWAYS "<NUMBER><UNIT>" with NO space
 
     Examples:
-    - '110G'       → '110 GR'
-    - '110g'       → '110 GR'
-    - '500 gr'     → '500 GR'
-    - '500GR'      → '500 GR'
-    - '1.5 L'      → '1.5 L'
-    - '1,5l'       → '1.5 L'
-    - '750ml'      → '750 ML'
-    - '40 g'       → '40 GR'
-    - '1.5kg'      → '1.5 KG'
-    - '2K'         → '2 KG'
+    - '110G'       → '110GR'
+    - '110g'       → '110GR'
+    - '500 gr'     → '500GR'
+    - '500 GR'     → '500GR'
+    - '1.5 L'      → '1.5L'
+    - '1,5l'       → '1.5L'
+    - '750ml'      → '750ML'
+    - '40 g'       → '40GR'
+    - '1.5kg'      → '1.5KG'
+    - '2K'         → '2KG'
     """
     if value is None:
         return None
@@ -163,8 +163,8 @@ def normalize_content(value: Any) -> Optional[str]:
         elif unit in ("LTR", "LITRE", "LITER"):
             unit = "L"
     
-    # Return with exactly one space
-    return f"{num} {unit}"
+    # ✅ CHANGED: Return WITHOUT space
+    return f"{num}{unit}"
 
 
 def extract_ca_cse(value: Any) -> Optional[int]:
@@ -202,18 +202,18 @@ def extract_ca_cse(value: Any) -> Optional[int]:
 
 def extract_content_from_description(description: Optional[str]) -> Optional[str]:
     """
-    Extract content from description and return canonical "<NUMBER> <UNIT>".
+    Extract content from description and return canonical "<NUMBER><UNIT>" (NO SPACE).
 
     Looks for:
     - 187GR, 500GR, 1.5KG
     - 330ML, 750ML, 1.5L, 2L
-    - Also supports "40 G" -> "40 GR", "110G" -> "110 GR"
+    - Also supports "40 G" -> "40GR", "110G" -> "110GR"
 
     Examples:
-    - "LU PRINCE 187GR MILK" → "187 GR"
-    - "COCA COLA 330ML ZERO" → "330 ML"
-    - "WATER 1.5L" → "1.5 L"
-    - "MKA 110G TYM CHOCO" → "110 GR"
+    - "LU PRINCE 187GR MILK" → "187GR"
+    - "COCA COLA 330ML ZERO" → "330ML"
+    - "WATER 1.5L" → "1.5L"
+    - "MKA 110G TYM CHOCO" → "110GR"
     """
     if not description:
         return None
@@ -237,16 +237,17 @@ def extract_content_from_description(description: Optional[str]) -> Optional[str
         unit = "KG"
 
     num = _normalize_number_str(num_raw)
-    return f"{num} {unit}"
+    # ✅ CHANGED: Return WITHOUT space
+    return f"{num}{unit}"
 
 
 def clean_description_from_content(description: Optional[str], content: Optional[str]) -> Optional[str]:
     """Remove content information AND CA/CSE notation from product description.
 
     Examples:
-        ("LU PRINCE 187GR MILK", "187 GR") → "LU PRINCE MILK"
-        ("COCA COLA 330ML ZERO", "330 ML") → "COCA COLA ZERO"
-        ("MKA 110G TYM CHOCO 10CA", "110 GR") → "MKA TYM CHOCO"
+        ("LU PRINCE 187GR MILK", "187GR") → "LU PRINCE MILK"
+        ("COCA COLA 330ML ZERO", "330ML") → "COCA COLA ZERO"
+        ("MKA 110G TYM CHOCO 10CA", "110GR") → "MKA TYM CHOCO"
     """
     if not description:
         return description
@@ -255,7 +256,7 @@ def clean_description_from_content(description: Optional[str], content: Optional
 
     # Step 1: Remove content if provided
     if content:
-        # content can be "187 GR" but description might contain "187GR" or "187G"
+        # content can be "187GR" but description might contain "187GR" or "187G" or "187 GR"
         m = re.match(r"^\s*(\d+(?:[.,]\d+)?)\s*([A-Z]+)\s*$", content.strip().upper())
         if m:
             num = m.group(1).replace(",", ".")
@@ -300,10 +301,10 @@ def force_clean_description(description: Optional[str]) -> Tuple[Optional[str], 
         - If no content found: returns original description and None
     
     Examples:
-        "MILKA 120G COW" → ("MILKA COW", "120 GR")
-        "OREO 154G BROWNIE" → ("OREO BROWNIE", "154 GR")
+        "MILKA 120G COW" → ("MILKA COW", "120GR")
+        "OREO 154G BROWNIE" → ("OREO BROWNIE", "154GR")
         "TUC ORIGINAL" → ("TUC ORIGINAL", None)
-        "MKA 110G CHOCO 10CA" → ("MKA CHOCO", "110 GR")
+        "MKA 110G CHOCO 10CA" → ("MKA CHOCO", "110GR")
     """
     if not description:
         return description, None

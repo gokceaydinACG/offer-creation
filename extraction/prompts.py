@@ -102,6 +102,75 @@ FIELD EXTRACTION RULES:
    
    ❌ INPUT: "LU PRINCE 187GR MILK"
    ✅ OUTPUT: description = "LU PRINCE MILK", content = "187GR"
+  ⚠️ MULTILINGUAL TERM TRANSLATIONS (CRITICAL):
+   You MUST translate non-English product terms to English. Common translations:
+   
+   🇫🇷 FRENCH → ENGLISH:
+   - LAQUE → HAIR SPRAY
+   - FIXATION NORMALE → NORMAL HOLD
+   - FIXATION FORTE → STRONG HOLD
+   - FIXATION EXTRA FORTE → EXTRA STRONG HOLD
+   - SANS PARFUM → FRAGRANCE FREE
+   - SANS ALCOOL → ALCOHOL FREE
+   - SHAMPOOING → SHAMPOO
+   - APRÈS-SHAMPOOING → CONDITIONER
+   - GEL DOUCHE → SHOWER GEL
+   - CRÈME → CREAM
+   - DÉODORANT → DEODORANT
+   
+   🇪🇸 SPANISH → ENGLISH:
+   - LACA → HAIR SPRAY
+   - FIJACIÓN NORMAL → NORMAL HOLD
+   - FIJACIÓN FUERTE → STRONG HOLD
+   - SIN PERFUME → FRAGRANCE FREE
+   - SIN ALCOHOL → ALCOHOL FREE
+   - CHAMPÚ → SHAMPOO
+   - ACONDICIONADOR → CONDITIONER
+   - GEL DE DUCHA → SHOWER GEL
+   - CREMA → CREAM
+   
+   🇩🇪 GERMAN → ENGLISH:
+   - HAARLACK → HAIR SPRAY
+   - NORMALER HALT → NORMAL HOLD
+   - STARKER HALT → STRONG HOLD
+   - EXTRA STARKER HALT → EXTRA STRONG HOLD
+   - OHNE DUFTSTOFFE → FRAGRANCE FREE
+   - OHNE ALKOHOL → ALCOHOL FREE
+   - SHAMPOO → SHAMPOO (same)
+   - DUSCHGEL → SHOWER GEL
+   - CREME → CREAM
+   
+   🇮🇹 ITALIAN → ENGLISH:
+   - LACCA → HAIR SPRAY
+   - TENUTA NORMALE → NORMAL HOLD
+   - TENUTA FORTE → STRONG HOLD
+   - SENZA PROFUMO → FRAGRANCE FREE
+   - SENZA ALCOOL → ALCOHOL FREE
+   - SHAMPOO → SHAMPOO (same)
+   - BALSAMO → CONDITIONER
+   - DOCCIASCHIUMA → SHOWER GEL
+   - CREMA → CREAM
+   
+   🇳🇱 DUTCH → ENGLISH:
+   - HAARLAK → HAIR SPRAY
+   - NORMALE FIXATIE → NORMAL HOLD
+   - STERKE FIXATIE → STRONG HOLD
+   - EXTRA STERKE FIXATIE → EXTRA STRONG HOLD
+   - ZONDER PARFUM → FRAGRANCE FREE
+   - ZONDER ALCOHOL → ALCOHOL FREE
+   - SHAMPOO → SHAMPOO (same)
+   - DOUCHEGEL → SHOWER GEL
+   - CRÈME → CREAM
+   
+   Examples with multilingual translations:
+   ✅ INPUT: "ELNETT LAQUE FIXATION NORMALE 200ML"
+      OUTPUT: product_description: "ELNETT HAIR SPRAY NORMAL HOLD", content: "200ML"
+   
+   ✅ INPUT: "ELNETT LACA FIJACIÓN FUERTE 400ML"
+      OUTPUT: product_description: "ELNETT HAIR SPRAY STRONG HOLD", content: "400ML"
+   
+   ✅ INPUT: "NIVEA DUSCHGEL OHNE DUFTSTOFFE 250ML"
+      OUTPUT: product_description: "NIVEA SHOWER GEL FRAGRANCE FREE", content: "250ML"
 
    ⚠️ BRAND ABBREVIATION EXPANSION:
    You MUST expand common brand and product abbreviations. Think logically about what they mean:
@@ -139,8 +208,8 @@ FIELD EXTRACTION RULES:
 
    MUST INCLUDE:
    - Brand name (expanded if abbreviated)
-   - Product specific name (expanded if abbreviated)
-   - Variant (flavor, type, color, etc., expanded if abbreviated)
+   - Product specific name (expanded if abbreviated, translated if non-English)
+   - Variant (flavor, type, color, etc., expanded if abbreviated, translated if non-English)
 
    MUST NEVER INCLUDE:
    - ❌ Content information (NO gramaj: 187GR, 500ML, 1.5L, 110G, 120G, 150G, etc.)
@@ -177,18 +246,21 @@ FIELD EXTRACTION RULES:
    ✅ CORRECT: "LU PRINCE MINI STARS MILK"
    ✅ CORRECT: "COCA COLA ZERO SUGAR"
    ✅ CORRECT: "NIVEA MEN SHAVING FOAM SENSITIVE"
+   ✅ CORRECT: "ELNETT HAIR SPRAY NORMAL HOLD"
 
    ❌ WRONG: "LU PRINCE MINI STARS 187GR MILK 60 PACK"
    ❌ WRONG: "COCA COLA 330ML ZERO SUGAR 24 PACK"
    ❌ WRONG: "NIVEA MEN 200ML SHAVING FOAM"
    ❌ WRONG: "MKA HZLN BISC" (abbreviations not expanded)
+   ❌ WRONG: "ELNETT LAQUE FIXATION NORMALE" (not translated to English)
 
    Process:
-   1. First, identify and expand ALL abbreviations
-   2. Then, extract content value (187GR, 110G, etc.) → put in content field
-   3. Then, extract CA/CSE value (10CA, 12CSE, etc.) → put in piece_per_case field
-   4. Finally, clean description by removing content, CA/CSE, and pack info
-   5. Never lose the content or packaging values!
+   1. First, translate non-English terms to English
+   2. Then, identify and expand ALL abbreviations
+   3. Then, extract content value (187GR, 110G, etc.) → put in content field
+   4. Then, extract CA/CSE value (10CA, 12CSE, etc.) → put in piece_per_case field
+   5. Finally, clean description by removing content, CA/CSE, and pack info
+   6. Never lose the content or packaging values!
 
 3. Content ⚠️ MANDATORY FIELD
    - ALWAYS extract content if present in the data
@@ -360,6 +432,18 @@ FIELD EXTRACTION RULES:
    
    DO NOT GUESS! READ THE COLUMN NAME CAREFULLY!
    
+   🚨🚨🚨 CRITICAL: "STOCK" COLUMN RECOGNITION 🚨🚨🚨
+   ==========================================
+   IF you see a column named:
+   - "Stock" OR "STOCK" OR "Stock(current)" OR "Stock (current)"
+   
+   → Extract to: availability_pieces ✅
+   
+   Example:
+   Column "Stock(current)" = 5940 → availability_pieces: 5940 ✅
+   Column "Stock" = 3300 → availability_pieces: 3300 ✅
+   
+   "Stock" = availability_pieces (individual units available)
    ⚠️ MOST COMMON MISTAKE (DO NOT MAKE THIS ERROR):
    Column: "Cases Available" = 5940
    ❌ WRONG: {"availability_pieces": 5940, "availability_cartons": null}
@@ -390,6 +474,7 @@ FIELD EXTRACTION RULES:
    - "Pieces Available", "Units Available", "PIECES AVAILABLE"
    - "Pieces in stock", "Units in stock", "Units on hand"
    - "Available units", "Stock units", "Pcs Available"
+   - "Stock", "Stock(current)", "Stock (current)" ⚠️ CRITICAL
    → Extract to: availability_pieces ✅
    → DO NOT extract to: availability_cartons ❌
    

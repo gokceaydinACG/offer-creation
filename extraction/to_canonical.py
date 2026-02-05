@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, date
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -12,6 +13,7 @@ from input_readers import read_excel, read_image_as_data_url, read_pdf
 
 from .llm_client import get_client
 from .prompts import EXTRACTION_SYSTEM_PROMPT, build_extraction_prompt
+from .chunked_processor import process_excel_in_chunks
 from fields.normalization import to_float, to_int
 
 
@@ -133,8 +135,8 @@ def _dict_to_canonical(product: Dict[str, Any], source_file: str, source_row: in
 def excel_to_canonical(xlsx_path: Path, model: str = "gpt-4o-mini", extract_price: bool = False) -> List[CanonicalRow]:
     """Convert Excel file to Canonical using LLM extraction.
     
-    IMPORTANT: Pre-extracts content from raw data before LLM processing.
-    If LLM fails to extract content, uses pre-extracted value.
+    Uses chunked processing for large files (>50 rows) to avoid token limits.
+    Pre-extracts content from raw data before LLM processing as safety net.
     
     Args:
         xlsx_path: Path to Excel file
@@ -147,11 +149,8 @@ def excel_to_canonical(xlsx_path: Path, model: str = "gpt-4o-mini", extract_pric
     # PRE-EXTRACT content before LLM (safety net)
     pre_extracted_content = _pre_extract_content_from_rows(rows)
     
-    # Convert to text for LLM
-    raw_data = json.dumps(rows, indent=2, ensure_ascii=False)
-    
-    # Extract using LLM
-    products = _call_llm_extraction(raw_data, "excel", model, extract_price)
+    # Process with chunking (handles datetime sanitization internally)
+    products = process_excel_in_chunks(rows, model, extract_price)
     
     # Convert to Canonical
     canonical_rows = [

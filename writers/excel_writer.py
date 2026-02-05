@@ -104,7 +104,8 @@ def write_rows_to_xlsx(
 
         cell = ws.cell(row=start_row, column=excel_col, value=header_text)
 
-        cell.font = Font(bold=True, color="000000", size=11, name="Calibri")
+        # ✅ CHANGED: Roboto 10 font
+        cell.font = Font(bold=True, color="000000", size=10, name="Roboto")
         cell.fill = PatternFill(start_color="FBF0D9", end_color="FBF0D9", fill_type="solid")
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
@@ -128,6 +129,9 @@ def write_rows_to_xlsx(
             value = row_data.get(header)
 
             cell = ws.cell(row=excel_row, column=excel_col, value=value)
+            
+            # ✅ CHANGED: Roboto 10 font for all data cells
+            cell.font = Font(size=10, name="Roboto")
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = full_grid
 
@@ -146,6 +150,7 @@ def write_rows_to_xlsx(
             cartons_cell = ws.cell(row=excel_row, column=col_cartons)
             cartons_cell.value = f'=IFERROR({pieces_ref}/{ppc_ref},"")'
             cartons_cell.number_format = "0.0"
+            cartons_cell.font = Font(size=10, name="Roboto")
             cartons_cell.alignment = Alignment(horizontal="center", vertical="center")
             cartons_cell.border = full_grid
 
@@ -153,6 +158,7 @@ def write_rows_to_xlsx(
             pallets_cell = ws.cell(row=excel_row, column=col_pallets)
             pallets_cell.value = f'=IFERROR({pieces_ref}/{ppp_ref},"")'
             pallets_cell.number_format = "0.0"
+            pallets_cell.font = Font(size=10, name="Roboto")
             pallets_cell.alignment = Alignment(horizontal="center", vertical="center")
             pallets_cell.border = full_grid
 
@@ -183,53 +189,6 @@ def write_rows_to_xlsx(
     )
 
     # --- TOTALS ROW FOR AVAILABILITY COLUMNS ---
-    if rows and col_cartons and col_pieces and col_pallets:
-        last_data_row = start_row + len(rows)
-        totals_row = last_data_row + 1
-        
-        # Background color for totals row (availability columns only)
-        totals_fill = PatternFill(start_color="F8F0D9", end_color="F8F0D9", fill_type="solid")
-        
-        # Border without top line (to avoid double border with data row above)
-        totals_border = Border(left=thin, right=thin, top=None, bottom=thin)
-        
-        # Write totals only for the 3 availability columns
-        for col_idx, header in enumerate(headers):
-            excel_col = start_col + col_idx
-            cell = ws.cell(row=totals_row, column=excel_col)
-            
-            if header == "Availability/Cartons":
-                # SUM formula for cartons
-                first_data_row = start_row + 1
-                cell.value = f"=SUM({get_column_letter(excel_col)}{first_data_row}:{get_column_letter(excel_col)}{last_data_row})"
-                cell.number_format = "0.0"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                cell.fill = totals_fill  # Background color
-                cell.border = totals_border  # No top border
-                
-            elif header == "Availability/Pieces":
-                # SUM formula for pieces
-                first_data_row = start_row + 1
-                cell.value = f"=SUM({get_column_letter(excel_col)}{first_data_row}:{get_column_letter(excel_col)}{last_data_row})"
-                cell.number_format = "0.0"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                cell.fill = totals_fill  # Background color
-                cell.border = totals_border  # No top border
-                
-            elif header == "Availability/Pallets":
-                # SUM formula for pallets
-                first_data_row = start_row + 1
-                cell.value = f"=SUM({get_column_letter(excel_col)}{first_data_row}:{get_column_letter(excel_col)}{last_data_row})"
-                cell.number_format = "0.0"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                cell.fill = totals_fill  # Background color
-                cell.border = totals_border  # No top border
-            else:
-                # Empty cell for other columns
-                cell.value = None
-                cell.border = totals_border  # No top border
-
-    # --- TOTALS ROW FOR AVAILABILITY COLUMNS ---
     if col_cartons and col_pallets and len(rows) > 0:
         last_data_row = start_row + len(rows)
         totals_row = last_data_row + 1
@@ -240,11 +199,8 @@ def write_rows_to_xlsx(
             cell = ws.cell(row=totals_row, column=excel_col)
             cell.alignment = Alignment(horizontal="center", vertical="center")
             
-            # Determine borders (thick on left/right edges, top border thick)
-            left_border = thick if excel_col == start_col else thin
-            right_border = thick if excel_col == last_col else thin
-            
-            cell.border = Border(top=thick, bottom=thin, left=left_border, right=right_border)
+            # ✅ CHANGED: All borders THIN (no thick borders on totals row)
+            cell.border = Border(top=thin, bottom=thin, left=thin, right=thin)
         
         # Add totals for the 3 availability columns (will overwrite empty cells)
         first_data_row = start_row + 1
@@ -255,8 +211,10 @@ def write_rows_to_xlsx(
         cartons_total_cell.value = f"=SUM({cartons_range})"
         cartons_total_cell.number_format = "0.0"
         cartons_total_cell.alignment = Alignment(horizontal="center", vertical="center")
-        cartons_total_cell.font = Font(bold=True, size=10)
-        # Keep existing border from loop above
+        # ✅ CHANGED: Roboto 10 font for totals + Background color
+        cartons_total_cell.font = Font(bold=True, size=10, name="Roboto")
+        cartons_total_cell.fill = PatternFill(start_color="F8F0D9", end_color="F8F0D9", fill_type="solid")
+        cartons_total_cell.border = Border(top=thin, bottom=thin, left=thin, right=thin)
         
         # Availability/Pieces
         pieces_total_cell = ws.cell(row=totals_row, column=col_pieces)
@@ -264,8 +222,9 @@ def write_rows_to_xlsx(
         pieces_total_cell.value = f"=SUM({pieces_range})"
         pieces_total_cell.number_format = "0.0"
         pieces_total_cell.alignment = Alignment(horizontal="center", vertical="center")
-        pieces_total_cell.font = Font(bold=True, size=10)
-        # Keep existing border from loop above
+        pieces_total_cell.font = Font(bold=True, size=10, name="Roboto")
+        pieces_total_cell.fill = PatternFill(start_color="F8F0D9", end_color="F8F0D9", fill_type="solid")
+        pieces_total_cell.border = Border(top=thin, bottom=thin, left=thin, right=thin)
         
         # Availability/Pallets
         pallets_total_cell = ws.cell(row=totals_row, column=col_pallets)
@@ -273,8 +232,9 @@ def write_rows_to_xlsx(
         pallets_total_cell.value = f"=SUM({pallets_range})"
         pallets_total_cell.number_format = "0.0"
         pallets_total_cell.alignment = Alignment(horizontal="center", vertical="center")
-        pallets_total_cell.font = Font(bold=True, size=10)
-        # Keep existing border from loop above
+        pallets_total_cell.font = Font(bold=True, size=10, name="Roboto")
+        pallets_total_cell.fill = PatternFill(start_color="F8F0D9", end_color="F8F0D9", fill_type="solid")
+        pallets_total_cell.border = Border(top=thin, bottom=thin, left=thin, right=thin)
 
     # --- OPTIMIZED COLUMN WIDTHS (NARROWER FOR BETTER PAGE FIT) ---
     # Define fixed widths for specific columns to fit page better
