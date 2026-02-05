@@ -73,7 +73,6 @@ def render_department_selector():
         key="department_radio",
     )
 
-    # ✅ FIX: With Price, Double Stackable'ın ALTINDA
     double_stackable = st.checkbox(
         "Double Stackable",
         value=False,
@@ -204,7 +203,7 @@ def render_selectable_table(df: pd.DataFrame) -> pd.DataFrame:
 def render_product_image_uploader(selected_df):
     st.markdown("---")
     st.markdown("### 🖼️ Add Product Images")
-    st.info("💡 Search for product images on Google, then upload them here. Images will appear in the Excel file.")
+    st.info("💡 Search for product images on Google using EAN codes. Upload images here to include in Excel file.")
 
     if selected_df is None or selected_df.empty:
         st.warning("⚠️ Select products above first to add images")
@@ -216,13 +215,12 @@ def render_product_image_uploader(selected_df):
     for idx in range(num_selected):
         row = selected_df.iloc[idx]
         product_desc = row.get("Product Description", "")
-        # ✅ CHANGED: Use EAN code for Google Images search instead of product description
         ean_code = row.get("EAN code unit", "")
 
         if not product_desc:
             continue
 
-        # Use EAN if available, fallback to product description
+        # ✅ PRIORITY: Use EAN for search, fallback to product description if EAN is empty
         search_term = ean_code if ean_code else product_desc
         search_query = urllib.parse.quote(search_term)
         google_images_url = f"https://www.google.com/search?tbm=isch&q={search_query}"
@@ -232,10 +230,12 @@ def render_product_image_uploader(selected_df):
 
             with col1:
                 st.markdown(f"**Product:** {product_desc}")
-                # Show what's being searched (EAN or description)
+                # Always show what's being searched
                 if ean_code:
-                    st.markdown(f"**EAN:** {ean_code}")
-                st.markdown(f"[🔍 Search on Google Images]({google_images_url})")
+                    st.markdown(f"**🔍 Searching with EAN:** {ean_code}")
+                else:
+                    st.markdown(f"**🔍 Searching with:** Product Description")
+                st.markdown(f"[Open Google Images Search]({google_images_url})")
 
             with col2:
                 uploaded_img = st.file_uploader(

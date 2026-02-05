@@ -342,7 +342,13 @@ FIELD EXTRACTION RULES:
    
    🚨 PATTERN RECOGNITION - X/Y FORMAT (SCALABLE):
    ==========================================
-   ⚠️ PRIORITY RULE: X/Y format → case_per_pallet (NOT pieces_per_pallet!)
+   ⚠️ PRIORITY RULE: Check X carefully! 
+   - IF X = CSE, CS, CT (case) → case_per_pallet
+   - IF X = CON, PC, UNIT (pieces) → pieces_per_pallet
+   
+   🚨 CRITICAL DISTINCTION:
+   - CON/PAL → pieces_per_pallet ✅ (CON = pieces)
+   - CSE/PAL → case_per_pallet ✅ (CSE = case)
    
    IF you see a column header in format: X/Y or X / Y
    WHERE:
@@ -370,9 +376,14 @@ FIELD EXTRACTION RULES:
    - CS = Case (abbreviation)
    - CT = Carton
    - CTN = Carton
+   - CON = Content/Pieces (abbreviation) ⚠️ NOT cases!
    - PAL = Pallet (abbreviation)
    - PLT = Pallet (abbreviation)
    - "/" or " / " means "per" (per pallet)
+   🚨 CON/PAL vs CSE/PAL DISTINCTION:
+   - CON/PAL → pieces_per_pallet ✅ (CON = content/pieces)
+   - CSE/PAL → case_per_pallet ✅ (CSE = case)
+   - Always check: CON = pieces, CSE = cases!
    
    🚨 CRITICAL SUPPLIER QUIRK - "PALLET" COLUMN (EXTREMELY COMMON):
    IF you see a column header EXACTLY named:
@@ -399,17 +410,24 @@ FIELD EXTRACTION RULES:
      * "Pieces per pallet", "Total pieces/pallet", "Pieces/pallet"
      * "Stuks per pallet", "Units per pallet", "Units/pallet"
      * "PPP", "Total units", "Total pieces"
-     * ⚠️ MUST contain word "PIECES" or "UNITS" + "PALLET"
+     * "CON/Pallet", "CON/PAL", "CON / PALLET" ⚠️ CRITICAL (CON = pieces/units)
+     * ⚠️ MUST contain word "PIECES" or "UNITS" or "CON" + "PALLET"
    
    🚨 CRITICAL: DO NOT confuse with CSE/PAL or CS/PAL!
    ==========================================
    - "CSE/PAL", "CS/PAL", "CT/PAL" → case_per_pallet (NOT pieces_per_pallet!)
-   - "Pieces per pallet", "Units per pallet" → pieces_per_pallet ✅
+   - "Pieces per pallet", "Units per pallet", "CON/PAL" → pieces_per_pallet ✅
    
-   IF you see "CSE/PAL" or similar abbreviated format:
+   🚨 SPECIAL PATTERN: CON/PALLET or CON/PAL
+   - CON = pieces/units (NOT cases!)
+   - "CON/Pallet" = Total pieces per pallet
+   - Examples: "CON/PAL" = 6720 → pieces_per_pallet: 6720 ✅
+   
+   IF you see "CSE/PAL" or "CS/PAL":
    → Extract to case_per_pallet (NOT pieces_per_pallet!)
    
-   pieces_per_pallet is ONLY for explicit "Pieces per pallet" or "Units per pallet" columns!
+   IF you see "CON/PAL" or "CON/Pallet":
+   → Extract to pieces_per_pallet ✅ (CON = pieces!)
    ==========================================
    
    - Extract only what is explicitly stated
@@ -431,7 +449,7 @@ FIELD EXTRACTION RULES:
    **RULE #3: If column says "PALLETS" → availability_pallets**
    
    DO NOT GUESS! READ THE COLUMN NAME CAREFULLY!
-   
+
    🚨🚨🚨 CRITICAL: "STOCK" COLUMN RECOGNITION 🚨🚨🚨
    ==========================================
    IF you see a column named:
@@ -716,7 +734,8 @@ LOGIC:
 - "CSE/PAL" = 280 → case_per_pallet: 280 ✅ (NOT pieces_per_pallet!)
 - "CS/PAL" = 45 → case_per_pallet: 45 ✅
 - "PC/CSE" = 24 → piece_per_case: 24 ✅
-- "Pieces per pallet" = 6720 → pieces_per_pallet: 6720 ✅
+- "CON/PAL" = 6720 → pieces_per_pallet: 6720 ✅ (CON = pieces, NOT cases!)
+- "CON/Pallet" = 5940 → pieces_per_pallet: 5940 ✅
 
 Examples:
 INPUT: "Units/ case" column shows 288 → piece_per_case: 288
@@ -726,6 +745,8 @@ INPUT: "CSE/PAL" column shows 280 → case_per_pallet: 280 ⚠️ CRITICAL (NOT 
 INPUT: "CS/PAL" column shows 28 → case_per_pallet: 28
 INPUT: "Units/case" column shows 24 → piece_per_case: 24
 INPUT: "Stuks per doos" column shows 120 → piece_per_case: 120
+INPUT: "CON/Pallet" column shows 6720 → pieces_per_pallet: 6720 ⚠️ CRITICAL (CON = pieces!)
+INPUT: "CON/PAL" column shows 5940 → pieces_per_pallet: 5940 ⚠️ CRITICAL (NOT case_per_pallet!)
 
 🚨 CRITICAL WARNING:
 IF you see "CSE/PAL" or "CS/PAL":
