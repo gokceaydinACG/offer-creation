@@ -18,6 +18,7 @@ from .prompts import EXTRACTION_SYSTEM_PROMPT, build_extraction_prompt
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
+
 from config import CHUNK_SIZE, MAX_TEXT_CHARS_BEFORE_LLM, JSON_RETRY_ATTEMPTS
 
 

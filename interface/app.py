@@ -30,6 +30,7 @@ from styles import get_custom_css
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
+
 from config import (
     MAX_FILE_SIZE_MB,
     MAX_SHEET_ROWS,

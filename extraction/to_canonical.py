@@ -132,7 +132,12 @@ def _dict_to_canonical(product: Dict[str, Any], source_file: str, source_row: in
     )
 
 
-def excel_to_canonical(xlsx_path: Path, model: str = "gpt-4o-mini", extract_price: bool = False) -> List[CanonicalRow]:
+def excel_to_canonical(
+    xlsx_path: Path, 
+    model: str = "gpt-4o-mini", 
+    extract_price: bool = False,
+    sheet_name: str | None = None  # NEW: Sheet name to process
+) -> List[CanonicalRow]:
     """Convert Excel file to Canonical using LLM extraction.
     
     Uses chunked processing for large files (>50 rows) to avoid token limits.
@@ -142,9 +147,10 @@ def excel_to_canonical(xlsx_path: Path, model: str = "gpt-4o-mini", extract_pric
         xlsx_path: Path to Excel file
         model: LLM model to use
         extract_price: If True, extract price from supplier offer
+        sheet_name: Optional sheet name to read (None = first sheet)
     """
-    # Read raw Excel data
-    rows = read_excel(xlsx_path)
+    # Read raw Excel data (with sheet selection)
+    rows = read_excel(xlsx_path, sheet_name=sheet_name)  # NEW: Pass sheet_name
     
     # PRE-EXTRACT content before LLM (safety net)
     pre_extracted_content = _pre_extract_content_from_rows(rows)
