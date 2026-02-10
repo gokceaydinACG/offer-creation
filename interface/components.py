@@ -111,7 +111,8 @@ def render_file_uploader():
     if uploaded_file:
         st.success(f"✅ {uploaded_file.name} uploaded successfully!")
     else:
-        st.info("📋 Accepted formats: Excel, PDF, PNG, JPG")
+        st.info("📋 **Accepted formats:** Excel, PDF, PNG, JPG\n\n"
+                "**Excel limits:** Max 50MB file size, 100k rows, 300 columns per sheet")
 
     return uploaded_file
 
