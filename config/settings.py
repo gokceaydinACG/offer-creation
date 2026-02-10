@@ -29,12 +29,12 @@ MOVE_INPUT_TO_PROCESSED = False
 MAX_FILE_SIZE_MB = 50
 
 # Excel content limits (per sheet)
-MAX_SHEET_ROWS = 100_000  # 100k rows per sheet
-MAX_SHEET_COLS = 300      # 300 columns per sheet
+MAX_SHEET_ROWS = 10_000   # 10k rows (realistic for supplier offers)
+MAX_SHEET_COLS = 100      # 100 columns (more than enough)
 MAX_SHEETS = 20           # Maximum number of sheets to display in UI
 
 # Hard block extremely wide sheets (these will crash openpyxl/pandas)
-EXTREME_COLS_LIMIT = 1000  # Block sheets with >1000 columns
+EXTREME_COLS_LIMIT = 500  # Block sheets with >500 columns
 
 # ============================================================================
 # LLM PROCESSING LIMITS

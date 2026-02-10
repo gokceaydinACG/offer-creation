@@ -10,6 +10,11 @@ def get_custom_css():
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 
+/* ✅ Hide Streamlit's default "Limit 200MB per file" text */
+[data-testid="stFileUploader"] small {
+    display: none !important;
+}
+
 /* ✅ Modern font: Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
